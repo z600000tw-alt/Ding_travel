@@ -811,6 +811,10 @@ noscript{display:block;padding:20px;text-align:center}
 .snap-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;aspect-ratio:4/3;border:1.5px dashed var(--ink2);border-radius:3px;background:var(--soft);font:inherit;font-size:13px;color:var(--ink2);cursor:pointer;padding:0}
 .snap-ph svg{width:30px;height:30px}
 .polaroid img[hidden]{display:none}
+.trips-l .crew-n{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:1px}
+.trips-l .crew-n b{font-weight:normal;font-size:15px;color:var(--ink)}
+.trips-l .crew-n em{font-style:normal;font-size:11px;padding:0 7px;border:1.2px solid var(--ink);border-radius:99px;background:var(--yellow-l);margin-left:4px}
+.trips-l .adm-kick{margin-left:4px}
 </style>
 </head>
 <body>
@@ -1341,7 +1345,7 @@ function tryCode(code,nick,stored){
       .then(function(r){
         if(r[0].exists){store(SP+"code",null);showCode(false);err("旅行密碼已經換了，請向主揪拿新密碼");return;}
         if(!r[1].exists&&r[2]!==window.TRIP_CHECK){store(SP+"code",null);if(stored)showCode(false);else{busy(false,"進入");}err("密碼不對，請再確認一次");return;}
-        SEED_OK=!r[1].exists;store(SP+"code",code);store(SP+"nick",nick);enter(nick);
+        SEED_OK=!r[1].exists;store(SP+"code",code);store(SP+"nick",nick);tripSave(code,{});enter(nick);
       },function(e){
         if(stored){enter(nick);return;} /* 離線但手機記得密碼：先進去 */
         throw e;});
@@ -1353,7 +1357,7 @@ function account(name){
   var p=document.createElement("p");p.className="acct";p.id="acct";
   var a=myAv(),pic=(a?'<span class="acct-av">'+avSvg(a)+'</span>':'')+(MODE==="code"&&gLinked()?'<span class="acct-g" title="已連接 Google">'+G_ICON+'</span>':'');
   p.innerHTML=MODE==="google"?pic+'已登入：'+esc(name)+'<button type="button" class="linkish" id="acctProf">換頭像</button><button type="button" class="linkish" id="acctOut">登出</button>'
-    :pic+esc(name)+'<button type="button" class="linkish" id="acctNick">改名字・頭像</button><button type="button" class="linkish" id="acctAdmin">管理員</button><button type="button" class="linkish" id="acctOut">登出</button>';
+    :pic+esc(name)+'<button type="button" class="linkish" id="acctNick">改名字・頭像</button><button type="button" class="linkish" id="acctTrips">我的旅行</button><button type="button" class="linkish" id="acctAdmin">管理員</button><button type="button" class="linkish" id="acctOut">登出</button>';
   f.parentNode.insertBefore(p,f.nextSibling);
 }
 
@@ -1443,6 +1447,49 @@ function moveTrip(newCode,prog){
   });
 }
 
+
+/* ---------- 我的旅行：同一個網站放很多趟旅行（每趟一個旅行密碼），這支手機記得去過哪些 ---------- */
+function tripList(){try{var a=JSON.parse(load(SP+"trips")||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
+function tripSave(code,info){if(!code)return;var a=tripList(),i=-1;a.forEach(function(t,k){if(t.code===code)i=k});
+  var o=i>=0?a[i]:{code:code};Object.keys(info).forEach(function(k){if(info[k])o[k]=info[k]});o.at=Date.now();if(i<0)a.push(o);store(SP+"trips",JSON.stringify(a));}
+window.addEventListener("tripinfo",function(e){var c=load(SP+"code");if(MODE==="code"&&c&&ENTERED)tripSave(c,e.detail||{});});
+function rootOf(code){return sha("trip:"+code).then(function(k){return "c_"+k.slice(0,40)})}
+function showTrips(msg){var cur=load(SP+"code"),a=tripList().slice().sort(function(x,y){return (y.start||"").localeCompare(x.start||"")||(y.at||0)-(x.at||0)});
+  gate('<button type="button" class="gt-x" aria-label="關閉">✕</button><h1 class="gt-t">我的旅行</h1><p class="gt-p">每一趟旅行有自己的旅行密碼，資料完全分開。這支手機去過的旅行都會列在這裡，點一下就能切換。</p>'+
+    '<ul class="adm-l trips-l">'+a.map(function(t){var on=t.code===cur;
+      return '<li><span class="crew-n"><b>'+esc(t.name||"旅行")+'</b>'+(on?'<em>目前</em>':'')+'<small class="adm-mail">'+esc([t.title,"密碼 "+t.code].filter(Boolean).join("・"))+'</small></span>'+
+        (on?'':'<button type="button" class="adm-kick" data-tgo="'+esc(t.code)+'">切換</button><button type="button" class="adm-kick" data-trm="'+esc(t.code)+'" aria-label="從清單移除">✕</button>')+'</li>'}).join("")+'</ul>'+
+    '<section class="adm-s"><h2>新增下一趟旅行</h2><p class="gt-p">設一個新的旅行密碼，就會開一本全新的手帳（日期、行程都從空白模板開始）。目前這趟的資料不會動，隨時可以切回來。</p>'+
+    '<form class="gt-f gt-tnew" autocomplete="off"><label><span>新的旅行密碼（至少 4 個字，傳給這次的旅伴）</span><input class="inp" id="tnCode" required minlength="4" autocapitalize="off"></label>'+
+    '<label><span>這趟的管理員密碼</span><input class="inp" id="tnAdm" type="password" required minlength="4"></label>'+
+    '<button type="submit" class="btn gt-go"><span>建立並切換過去</span></button><p class="gt-err" hidden></p></form></section>'+
+    '<section class="adm-s"><h2>加入其他旅行</h2><p class="gt-p">別人開的旅行，或之前的旅行不在清單上：輸入那趟的旅行密碼。</p>'+
+    '<form class="gt-f gt-tjoin" autocomplete="off"><label><span>旅行密碼</span><input class="inp" id="tjCode" required autocapitalize="off"></label>'+
+    '<button type="submit" class="btn gt-go"><span>切換過去</span></button><p class="gt-err" hidden></p></form></section>');
+  if(msg){var f=$(".gt-tjoin");fmsg(f,msg);}}
+function goTrip(code){store(SP+"code",code);store(SP+"admin",null);location.reload();}
+document.addEventListener("click",function(e){var t=e.target,el;
+  if(t.closest("#acctTrips")){showTrips();return;}
+  if((el=t.closest("[data-tgo]"))){var c=el.dataset.tgo;el.textContent="檢查中…";
+    rootOf(c).then(function(r){return FS.doc("trips/"+r+"/shared/moved").get({source:"server"}).then(function(m){if(m.exists)throw "moved";return FS.doc("trips/"+r+"/shared/meta").get({source:"server"});})})
+    .then(function(s){if(!s.exists)throw "none";goTrip(c);})
+    .catch(function(x){el.textContent="切換";if(x==="moved"||x==="none"){if(confirmRm(c))showTrips(x==="moved"?"那趟旅行的密碼已經換了，請向主揪拿新密碼":"找不到這趟旅行的資料");}else{var tt=document.getElementById("toast");if(tt){tt.textContent="現在連不上網路，等有網路再切換";tt.classList.add("on");setTimeout(function(){tt.classList.remove("on")},2500);}}});return;}
+  if((el=t.closest("[data-trm]"))){if(el.classList.contains("armed")){confirmRm(el.dataset.trm);showTrips();}else{el.classList.add("armed");el.textContent="再按一次移除";}return;}
+});
+function confirmRm(code){store(SP+"trips",JSON.stringify(tripList().filter(function(t){return t.code!==code})));return true;}
+document.addEventListener("submit",function(e){var f=e.target;
+  if(f.classList.contains("gt-tnew")){e.preventDefault();var code=$("#tnCode").value.trim(),pw=$("#tnAdm").value;
+    if(code.length<4){fmsg(f,"旅行密碼至少 4 個字");return;}fmsg(f,"建立中…",true);
+    rootOf(code).then(function(r){if(r===ROOT)throw "same";return FS.doc("trips/"+r+"/shared/meta").get({source:"server"}).then(function(s){
+        if(s.exists)throw "used";
+        return sha("adm:"+pw).then(function(h){return Promise.all([FS.doc("trips/"+r+"/shared/meta").set({created:Date.now()}),FS.doc("trips/"+r+"/shared/admin").set({h:h,at:Date.now()})]).then(function(){store(SP+"admin",h);});});})})
+    .then(function(){tripSave(code,{name:"新的旅行"});store(SP+"code",code);location.reload();})
+    .catch(function(x){fmsg(f,x==="used"?"這個密碼已經有旅行了，換一個，或用下面的「加入其他旅行」":x==="same"?"這就是目前的旅行":"建立失敗，請檢查網路後再試一次");});return;}
+  if(f.classList.contains("gt-tjoin")){e.preventDefault();var c=$("#tjCode").value.trim();if(!c)return;fmsg(f,"檢查中…",true);
+    rootOf(c).then(function(r){return Promise.all([FS.doc("trips/"+r+"/shared/moved").get({source:"server"}),FS.doc("trips/"+r+"/shared/meta").get({source:"server"}),sha("chk:"+c)]);})
+    .then(function(r){if(r[0].exists){fmsg(f,"這個密碼已經換了，請向主揪拿新密碼");return;}if(!r[1].exists&&r[2]!==window.TRIP_CHECK){fmsg(f,"密碼不對，請再確認一次");return;}tripSave(c,{});goTrip(c);})
+    .catch(function(){fmsg(f,"現在連不上，請檢查網路後再試一次");});return;}
+});
 /* ---------- 成員名單：誰加入了、最後上線時間 ---------- */
 var CREW={},crewT=null,CREW_OPEN=false;
 document.addEventListener("click",function(e){if(e.target.closest("#crewTog")){CREW_OPEN=!CREW_OPEN;drawCrew();}});
@@ -1966,6 +2013,7 @@ function renderHero(){var h=hero();applyBrand(h.brand);
   var n=DAYMETA.length;$("#heroTag").textContent=h.tag;$("#heroTitle").textContent=h.title||fmtRange();if(!h.len)h.len=(n>1?(n-1)+" 晚 ":"")+n+" 天";
   var ft=$(".foot-t");if(ft){var a=DAYMETA[0].iso.split("-"),b=DAYMETA[n-1].iso.split("-");ft.innerHTML=esc(h.tag)+'<br>'+a.join(".")+" – "+(a[0]===b[0]?b[1]+"."+b[2]:b.join("."))+'　旅途愉快、平安回家';}
   renderSnap();renderScene();
+  try{window.dispatchEvent(new CustomEvent("tripinfo",{detail:{name:String(h.brand||"").trim(),title:(h.title||fmtRange())+"・"+DAYMETA[0].iso.slice(0,4),start:DAYMETA[0].iso}}))}catch(e){}
   $("#heroRoute").innerHTML=String(h.route||"").split(/[・,，、]/).filter(Boolean).map(function(x){return '<b>'+esc(x.trim())+'</b>'}).join('<i></i>')+(h.len?'　'+esc(h.len):'');}
 var FL_OPEN=null;
 function renderFlights(){
