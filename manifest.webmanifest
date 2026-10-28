@@ -1,0 +1,31 @@
+{
+  "name": "旅行手帳",
+  "short_name": "旅行手帳",
+  "description": "旅行手帳：航班、每日行程、住宿、伴手禮、預約、費用分帳、翻譯與匯率。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFCF6",
+  "theme_color": "#FFFCF6",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
