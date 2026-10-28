@@ -1169,11 +1169,11 @@ var DAYS_DEFAULT=[
 ;
 var IMG={};
 </script>
-<script>window.TRIP_SP="trip1_";</script>
+<script>window.TRIP_SP="travel_";</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>window.FIREBASE_CONFIG={"apiKey": "YOUR_API_KEY", "authDomain": "YOUR_PROJECT.firebaseapp.com", "projectId": "YOUR_PROJECT", "storageBucket": "YOUR_PROJECT.firebasestorage.app", "messagingSenderId": "", "appId": ""};window.TRIP_MODE="code";window.TRIP_CHECK="3326a9fb1fc0668dd965e44d41571fd2882be911e538abd991b0f6c44cfc57bd";window.TRIP_ADMIN="88bdb45f4440fb862975c73487c92ff13659294b7d118d94ae331bea5ee57f20";window.TRIP_SEED={};</script>
+<script>window.FIREBASE_CONFIG={"apiKey": "AIzaSyDD0srHpmRp8egDhPzknxZh1V8IrSgjeZc", "authDomain": "travelding.firebaseapp.com", "projectId": "travelding", "storageBucket": "travelding.firebasestorage.app", "messagingSenderId": "1019814106723", "appId": "1:1019814106723:web:28986e3843aa7e26d30a56"};window.TRIP_MODE="code";window.TRIP_CHECK="f43b939e58b5e99fe0ec1967b06730ec916c5110a7136853cd517bc82830faec";window.TRIP_ADMIN="3852e949dc0f65311dd3feb544b6471809322c1fa448778038fa7c617a98dc53";window.TRIP_SEED={};</script>
 <script>
 /* =========================================================
    Firebase 同步層：把 Firebase 包裝成跟 Claude 分享網頁一樣的資料庫介面，
@@ -1654,7 +1654,7 @@ function photoDone(){clearTimeout(photoT);photoT=setTimeout(function(){
 /* ===== 這趟旅行的預設資料（換旅行時改這個檔案；之後在網頁上的修改存在共用資料庫） =====
    大部分內容都能直接在網頁上改：日期、天數、目的地、貨幣、翻譯語言在「工具 → 旅行設定」；
    行程、住宿、伴手禮、費用、清單、緊急聯絡、首頁標題與合照都有編輯按鈕。 */
-var KEY="trip-handbook-v1";
+var KEY="travel-handbook-v1";
 var TRIP={start:"2027-04-03",n:5,dep:"2027-04-03T09:00:00+08:00",ret:"2027-04-07T20:00:00+08:00",tz:"Asia/Tokyo",
   cur:"JPY",lang:"ja",loc:["東京",35.681,139.767]};
 var DAYINFO=[

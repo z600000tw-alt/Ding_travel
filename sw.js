@@ -1,6 +1,6 @@
 /* 旅行手帳：離線快取。網頁、圖示、Firebase 程式碼存在手機裡，沒訊號也能打開；
    行程資料由 Firebase 自己存在手機裡，有網路時自動同步。 */
-const V = "trip1-v1";
+const V = "travel-v1";
 const PRE = V.replace(/v\d+$/, ""); /* 只清掉同一個網站的舊快取，不動同網域其他手帳 */
 const CORE = ["./", "./index.html", "./code.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
