@@ -815,6 +815,14 @@ noscript{display:block;padding:20px;text-align:center}
 .trips-l .crew-n b{font-weight:normal;font-size:15px;color:var(--ink)}
 .trips-l .crew-n em{font-style:normal;font-size:11px;padding:0 7px;border:1.2px solid var(--ink);border-radius:99px;background:var(--yellow-l);margin-left:4px}
 .trips-l .adm-kick{margin-left:4px}
+.crew-v{display:inline-block;margin-left:5px;padding:0 6px;font-size:10.5px;line-height:1.6;border:1.2px solid var(--ink);border-radius:99px;background:var(--coral-l);color:var(--ink);vertical-align:1px}
+.acct-v{flex-basis:100%;text-align:center;font-size:11px;color:var(--ink2);opacity:.8}
+.upd-bar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:90;display:flex;gap:8px;align-items:center;padding:8px 16px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);box-shadow:0 3px 0 var(--ink);font:inherit;font-size:14px;color:var(--ink);cursor:pointer;max-width:calc(100% - 32px)}
+.upd-bar b{font-weight:normal;white-space:nowrap}
+.upd-bar span{white-space:nowrap}
+.crew-t .crew-v{margin:0 4px 0 0}
+.crew-l .crew-n{min-width:3.2em}
+.upd-bar span{font-size:12.5px}
 </style>
 </head>
 <body>
@@ -1177,7 +1185,7 @@ var IMG={};
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>window.FIREBASE_CONFIG={"apiKey": "AIzaSyDD0srHpmRp8egDhPzknxZh1V8IrSgjeZc", "authDomain": "travelding.firebaseapp.com", "projectId": "travelding", "storageBucket": "travelding.firebasestorage.app", "messagingSenderId": "1019814106723", "appId": "1:1019814106723:web:28986e3843aa7e26d30a56"};window.TRIP_MODE="google";window.TRIP_CHECK="f43b939e58b5e99fe0ec1967b06730ec916c5110a7136853cd517bc82830faec";window.TRIP_ADMIN="3852e949dc0f65311dd3feb544b6471809322c1fa448778038fa7c617a98dc53";window.TRIP_SEED={};</script>
+<script>window.TRIP_APP_V="2026.11.05.0805";window.FIREBASE_CONFIG={"apiKey": "AIzaSyDD0srHpmRp8egDhPzknxZh1V8IrSgjeZc", "authDomain": "travelding.firebaseapp.com", "projectId": "travelding", "storageBucket": "travelding.firebasestorage.app", "messagingSenderId": "1019814106723", "appId": "1:1019814106723:web:28986e3843aa7e26d30a56"};window.TRIP_MODE="google";window.TRIP_CHECK="f43b939e58b5e99fe0ec1967b06730ec916c5110a7136853cd517bc82830faec";window.TRIP_ADMIN="3852e949dc0f65311dd3feb544b6471809322c1fa448778038fa7c617a98dc53";window.TRIP_SEED={};</script>
 <script>
 /* =========================================================
    Firebase 同步層：把 Firebase 包裝成跟 Claude 分享網頁一樣的資料庫介面，
@@ -1185,7 +1193,7 @@ var IMG={};
    ========================================================= */
 (function(){
 "use strict";
-var SP=window.TRIP_SP||"tokyo_";
+var SP=window.TRIP_SP||"tokyo_",APP_V=window.TRIP_APP_V||"";
 var CFG=window.FIREBASE_CONFIG||{},MODE=window.TRIP_MODE||"google",SEED=window.TRIP_SEED||{};
 var FS=null,AUTH=null,ME=null,ROOT=null,NICK="";
 var resolveReady,ready=new Promise(function(r){resolveReady=r});
@@ -1328,8 +1336,8 @@ function enter(name){
     return uref.get().then(function(sn){return sn.exists?(sn.data()||{}):{}},function(){return {}}).then(function(d){
       var nm=(ENTRY.nick||!d.name)?(name||"旅伴"):d.name,av=(ENTRY.av||!AVN[d.av])?myAv():d.av;
       store(SP+"nick",nm);store(SP+"av",av);NICK=nm;
-      uref.set({name:nm,av:av,g:gLinked()?1:0,gmail:gLinked()?gEmail():"",at:Date.now()},{merge:true}).catch(function(){});
-      hideGate();account(nm);resolveReady(true);crew();setTimeout(drawInstall,900);setTimeout(admState,800);
+      uref.set({name:nm,av:av,g:gLinked()?1:0,gmail:gLinked()?gEmail():"",at:Date.now(),v:APP_V},{merge:true}).catch(function(){});
+      hideGate();account(nm);resolveReady(true);crew();try{verWatch()}catch(e){}setTimeout(drawInstall,900);setTimeout(admState,800);
     });
     if(MODE==="code")FS.doc(path("shared/moved")).onSnapshot(function(sn){
       if(sn.exists&&!MOVING){store(SP+"code",null);store(SP+"moved","1");location.reload();}},function(){});
@@ -1358,6 +1366,7 @@ function account(name){
   var a=myAv(),pic=(a?'<span class="acct-av">'+avSvg(a)+'</span>':'')+(MODE==="code"&&gLinked()?'<span class="acct-g" title="已連接 Google">'+G_ICON+'</span>':'');
   p.innerHTML=MODE==="google"?pic+'已登入：'+esc(name)+'<button type="button" class="linkish" id="acctProf">換頭像</button><button type="button" class="linkish" id="acctOut">登出</button>'
     :pic+esc(name)+'<button type="button" class="linkish" id="acctNick">改名字・頭像</button><button type="button" class="linkish" id="acctTrips">我的旅行</button><button type="button" class="linkish" id="acctAdmin">管理員</button><button type="button" class="linkish" id="acctOut">登出</button>';
+  if(APP_V)p.insertAdjacentHTML("beforeend",'<small class="acct-v" hidden>版本 '+esc(vShort(APP_V))+'</small>');
   f.parentNode.insertBefore(p,f.nextSibling);
 }
 
@@ -1375,7 +1384,7 @@ function drawAdmList(){
   var ul=$("#admList");if(!ul)return;
   var ids=Object.keys(CREW).filter(function(id){return CREW[id]&&CREW[id].name}).sort(function(a,b){return (CREW[b].at||0)-(CREW[a].at||0)});
   ul.innerHTML=ids.map(function(id){var u=Object.assign({},CREW[id]);if(!AVN[u.av])u.av="seal";var me=ME&&id===ME.uid;
-    return '<li><span class="crew-av sm'+(u.av&&AVN[u.av]?' ani':'')+'" style="background:'+(u.av&&AVN[u.av]?'#E2F0F6':hue(String(u.name)))+'">'+(u.av&&AVN[u.av]?avSvg(u.av):esc(String(u.name).slice(0,1)))+'</span><span class="crew-n">'+esc(u.name)+(me?'<em>你</em>':'')+(u.g?'<small class="adm-mail">'+G_ICON+esc(u.gmail||"已連接 Google")+'</small>':'<small class="adm-mail none">只用暱稱</small>')+'</span><span class="crew-t">'+ago(u.at)+'</span>'+(me?'':'<button type="button" class="adm-kick" data-kick="'+esc(id)+'">移除</button>')+'</li>'}).join("")||'<li>還沒有人</li>';
+    return '<li><span class="crew-av sm'+(u.av&&AVN[u.av]?' ani':'')+'" style="background:'+(u.av&&AVN[u.av]?'#E2F0F6':hue(String(u.name)))+'">'+(u.av&&AVN[u.av]?avSvg(u.av):esc(String(u.name).slice(0,1)))+'</span><span class="crew-n">'+esc(u.name)+(me?'<em>你</em>':'')+(u.g?'<small class="adm-mail">'+G_ICON+esc(u.gmail||"已連接 Google")+'</small>':'<small class="adm-mail none">只用暱稱</small>')+'<small class="adm-mail none">'+(u.v?'版本 '+esc(vShort(u.v))+(APP_V&&u.v>=APP_V?'（最新）':'（舊版）'):'舊版（還沒更新）')+'</small>'+'</span><span class="crew-t">'+ago(u.at)+'</span>'+(me?'':'<button type="button" class="adm-kick" data-kick="'+esc(id)+'">移除</button>')+'</li>'}).join("")||'<li>還沒有人</li>';
 }
 function showAdmin(def){
   gate('<button type="button" class="gt-x" aria-label="關閉">✕</button><h1 class="gt-t">管理員設定</h1>'+
@@ -1490,6 +1499,20 @@ document.addEventListener("submit",function(e){var f=e.target;
     .then(function(r){if(r[0].exists){fmsg(f,"這個密碼已經換了，請向主揪拿新密碼");return;}if(!r[1].exists&&r[2]!==window.TRIP_CHECK){fmsg(f,"密碼不對，請再確認一次");return;}tripSave(c,{});goTrip(c);})
     .catch(function(){fmsg(f,"現在連不上，請檢查網路後再試一次");});return;}
 });
+
+window.addEventListener("tripadmin",function(e){var v=document.querySelector(".acct-v");if(v)v.hidden=!e.detail;if($("#crew"))drawCrew();});
+/* ---------- 版本：每個人用的是哪一版、有新版就提醒更新 ---------- */
+function vShort(v){var m=String(v||"").match(/^(\d{4})\.(\d\d)\.(\d\d)\.(\d\d)(\d\d)$/);return m?(+m[2])+"/"+(+m[3])+" "+m[4]+":"+m[5]:String(v||"");}
+function vTag(u){if(!APP_V||!window.TRIP_IS_ADMIN)return "";if(u.v&&u.v>=APP_V)return "";return '<span class="crew-v" title="'+(u.v?'版本 '+esc(vShort(u.v)):'還沒更新')+'">舊版</span>';}
+var VER_SEEN=false;
+function verWatch(){if(!APP_V||VER_SEEN)return;VER_SEEN=true;var ref=FS.doc(path("shared/ver"));
+  ref.onSnapshot(function(sn){var d=sn.exists?(sn.data()||{}):{};
+    if(!d.v||d.v<APP_V){ref.set({v:APP_V,at:Date.now()}).catch(function(){});return;}
+    if(d.v>APP_V&&!$("#updBar")){var b=document.createElement("button");b.type="button";b.id="updBar";b.className="upd-bar";
+      b.innerHTML='<b>有新版本</b><span>點我更新</span>';b.addEventListener("click",function(){b.textContent="更新中…";
+        try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update()}).catch(function(){})}catch(e){}
+        setTimeout(function(){location.reload()},400);});document.body.appendChild(b);}
+  },function(){});}
 /* ---------- 成員名單：誰加入了、最後上線時間 ---------- */
 var CREW={},crewT=null,CREW_OPEN=false;
 document.addEventListener("click",function(e){if(e.target.closest("#crewTog")){CREW_OPEN=!CREW_OPEN;drawCrew();}});
@@ -1506,11 +1529,11 @@ function drawCrew(){
   el.innerHTML='<button type="button" class="crew-h" id="crewTog" aria-expanded="'+CREW_OPEN+'"><span class="crew-face">'+ids.slice(0,7).map(function(id){var u=CREW[id]||{},a=AVN[u.av]?u.av:"seal";return '<i>'+avSvg(a)+'</i>'}).join("")+'</span><span class="crew-tt">旅伴名單<small>'+ids.length+' 人'+(on?'・'+on+' 人在線上':'')+'</small></span><svg class="crew-chev" aria-hidden="true"><use href="#i-chev"/></svg></button>'+
     '<ul class="crew-l">'+ids.map(function(id){var u=Object.assign({},CREW[id]);if(!AVN[u.av])u.av="seal";var nm=String(u.name),me=ME&&id===ME.uid,live=Date.now()-(u.at||0)<180000;
       return '<li'+(me?' class="me"':'')+'><span class="crew-av'+(u.av&&AVN[u.av]?' ani':'')+'" style="background:'+(u.av&&AVN[u.av]?'#E2F0F6':hue(nm))+'">'+(u.av&&AVN[u.av]?avSvg(u.av):esc(nm.slice(0,1)))+(live?'<i class="crew-on" aria-hidden="true"></i>':'')+'</span>'+
-        '<span class="crew-n">'+esc(nm)+(u.g?'<span class="crew-g" title="已連接 Google">'+G_ICON+'</span>':'')+(me?'<em>你</em>':'')+'</span><span class="crew-t'+(live?' live':'')+'">'+ago(u.at)+'</span></li>'}).join("")+'</ul>';
+        '<span class="crew-n">'+esc(nm)+(u.g?'<span class="crew-g" title="已連接 Google">'+G_ICON+'</span>':'')+(me?'<em>你</em>':'')+'</span><span class="crew-t'+(live?' live':'')+'">'+vTag(u)+ago(u.at)+'</span></li>'}).join("")+'</ul>';
   if($("#admList"))drawAdmList();
 }
 function heartbeat(){if(!ME||document.hidden)return;var n=MODE==="google"?(ME.displayName||ME.email):(load(SP+"nick")||NICK);
-  FS.doc(path("users/"+ME.uid)).set({name:n||"旅伴",av:myAv(),g:gLinked()?1:0,gmail:gLinked()?gEmail():"",at:Date.now()},{merge:true}).catch(function(){});}
+  FS.doc(path("users/"+ME.uid)).set({name:n||"旅伴",av:myAv(),g:gLinked()?1:0,gmail:gLinked()?gEmail():"",at:Date.now(),v:APP_V},{merge:true}).catch(function(){});}
 function crew(){
   FS.collection(path("users")).onSnapshot(function(snap){CREW={};snap.docs.forEach(function(d){CREW[d.id]=d.data()});drawCrew();
     var det={};Object.keys(CREW).forEach(function(id){det[id]={name:CREW[id].name,av:AVN[CREW[id].av]?CREW[id].av:"seal"}});
