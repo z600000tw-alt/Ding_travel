@@ -820,8 +820,10 @@ noscript{display:block;padding:20px;text-align:center}
 .upd-bar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:90;display:flex;gap:8px;align-items:center;padding:8px 16px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);box-shadow:0 3px 0 var(--ink);font:inherit;font-size:14px;color:var(--ink);cursor:pointer;max-width:calc(100% - 32px)}
 .upd-bar b{font-weight:normal;white-space:nowrap}
 .upd-bar span{white-space:nowrap}
-.crew-t .crew-v{margin:0 4px 0 0}
-.crew-l .crew-n{min-width:3.2em}
+.crew-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.crew-txt .crew-n{flex:none;font-size:14px}
+.crew-txt .crew-t{display:flex;align-items:center;gap:5px;font-size:11px;line-height:1.4}
+.crew-t .crew-v{margin:0;padding:0 5px;font-size:10px;line-height:1.5}
 .upd-bar span{font-size:12.5px}
 </style>
 </head>
@@ -1185,7 +1187,7 @@ var IMG={};
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>window.TRIP_APP_V="2026.11.05.0805";window.FIREBASE_CONFIG={"apiKey": "AIzaSyDD0srHpmRp8egDhPzknxZh1V8IrSgjeZc", "authDomain": "travelding.firebaseapp.com", "projectId": "travelding", "storageBucket": "travelding.firebasestorage.app", "messagingSenderId": "1019814106723", "appId": "1:1019814106723:web:28986e3843aa7e26d30a56"};window.TRIP_MODE="code";window.TRIP_CHECK="f43b939e58b5e99fe0ec1967b06730ec916c5110a7136853cd517bc82830faec";window.TRIP_ADMIN="3852e949dc0f65311dd3feb544b6471809322c1fa448778038fa7c617a98dc53";window.TRIP_SEED={};</script>
+<script>window.TRIP_APP_V="2026.11.05.0815";window.FIREBASE_CONFIG={"apiKey": "AIzaSyDD0srHpmRp8egDhPzknxZh1V8IrSgjeZc", "authDomain": "travelding.firebaseapp.com", "projectId": "travelding", "storageBucket": "travelding.firebasestorage.app", "messagingSenderId": "1019814106723", "appId": "1:1019814106723:web:28986e3843aa7e26d30a56"};window.TRIP_MODE="code";window.TRIP_CHECK="f43b939e58b5e99fe0ec1967b06730ec916c5110a7136853cd517bc82830faec";window.TRIP_ADMIN="3852e949dc0f65311dd3feb544b6471809322c1fa448778038fa7c617a98dc53";window.TRIP_SEED={};</script>
 <script>
 /* =========================================================
    Firebase 同步層：把 Firebase 包裝成跟 Claude 分享網頁一樣的資料庫介面，
@@ -1529,7 +1531,7 @@ function drawCrew(){
   el.innerHTML='<button type="button" class="crew-h" id="crewTog" aria-expanded="'+CREW_OPEN+'"><span class="crew-face">'+ids.slice(0,7).map(function(id){var u=CREW[id]||{},a=AVN[u.av]?u.av:"seal";return '<i>'+avSvg(a)+'</i>'}).join("")+'</span><span class="crew-tt">旅伴名單<small>'+ids.length+' 人'+(on?'・'+on+' 人在線上':'')+'</small></span><svg class="crew-chev" aria-hidden="true"><use href="#i-chev"/></svg></button>'+
     '<ul class="crew-l">'+ids.map(function(id){var u=Object.assign({},CREW[id]);if(!AVN[u.av])u.av="seal";var nm=String(u.name),me=ME&&id===ME.uid,live=Date.now()-(u.at||0)<180000;
       return '<li'+(me?' class="me"':'')+'><span class="crew-av'+(u.av&&AVN[u.av]?' ani':'')+'" style="background:'+(u.av&&AVN[u.av]?'#E2F0F6':hue(nm))+'">'+(u.av&&AVN[u.av]?avSvg(u.av):esc(nm.slice(0,1)))+(live?'<i class="crew-on" aria-hidden="true"></i>':'')+'</span>'+
-        '<span class="crew-n">'+esc(nm)+(u.g?'<span class="crew-g" title="已連接 Google">'+G_ICON+'</span>':'')+(me?'<em>你</em>':'')+'</span><span class="crew-t'+(live?' live':'')+'">'+vTag(u)+ago(u.at)+'</span></li>'}).join("")+'</ul>';
+        '<span class="crew-txt"><span class="crew-n">'+esc(nm)+(u.g?'<span class="crew-g" title="已連接 Google">'+G_ICON+'</span>':'')+(me?'<em>你</em>':'')+'</span><span class="crew-t'+(live?' live':'')+'">'+ago(u.at)+vTag(u)+'</span></span></li>'}).join("")+'</ul>';
   if($("#admList"))drawAdmList();
 }
 function heartbeat(){if(!ME||document.hidden)return;var n=MODE==="google"?(ME.displayName||ME.email):(load(SP+"nick")||NICK);
